@@ -10,14 +10,28 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   static const LatLng _pGooglePlex = LatLng(6.927079, 79.861244);
+  static const LatLng _pApplePark = LatLng(6.933850, 79.844860);
+
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: GoogleMap(
-          initialCameraPosition: CameraPosition(
-            target: _pGooglePlex,
-            zoom: 13,
-          )
+        initialCameraPosition: const CameraPosition(
+          target: _pGooglePlex,
+          zoom: 12,
+        ),
+        markers: {
+          Marker(
+            markerId: const MarkerId("_currentLocation"),
+            icon: BitmapDescriptor.defaultMarker,
+            position: _pGooglePlex,
+          ),
+          Marker(
+            markerId: const MarkerId("_sourceLocation"),
+            icon: BitmapDescriptor.defaultMarker,
+            position: _pApplePark,
+          ),
+        },
       ),
     );
   }
