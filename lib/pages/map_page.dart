@@ -50,5 +50,13 @@ class _MapPageState extends State<MapPage> {
     }else{
       return;
     }
+
+    _permissionGranted = await _locationController.hasPermission();
+    if(_permissionGranted == PermissionStatus.denied){
+      _permissionGranted = await _locationController.requestPermission();
+      if(_permissionGranted != PermissionStatus.granted){
+        return;
+      }
+    }
   }
 }
