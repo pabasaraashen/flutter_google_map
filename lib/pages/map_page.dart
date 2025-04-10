@@ -15,11 +15,22 @@ class _MapPageState extends State<MapPage> {
 
   static const LatLng _pGooglePlex = LatLng(6.927079, 79.861244);
   static const LatLng _pApplePark = LatLng(6.933850, 79.844860);
+  LatLng? _currentP = null;
+
+  @override
+  void initState() {
+    super.initState();
+    getLocationUpdates();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GoogleMap(
+      body: _currentP == null
+          ? const Center(
+        child: Text("Loading..."),
+      )
+          : GoogleMap(
         initialCameraPosition: const CameraPosition(
           target: _pGooglePlex,
           zoom: 12,
@@ -28,10 +39,15 @@ class _MapPageState extends State<MapPage> {
           Marker(
             markerId: const MarkerId("_currentLocation"),
             icon: BitmapDescriptor.defaultMarker,
-            position: _pGooglePlex,
+            position: _currentP!,
           ),
           Marker(
             markerId: const MarkerId("_sourceLocation"),
+            icon: BitmapDescriptor.defaultMarker,
+            position: _pGooglePlex,
+          ),
+          Marker(
+            markerId: const MarkerId("_destinationLocation"),
             icon: BitmapDescriptor.defaultMarker,
             position: _pApplePark,
           ),
@@ -58,5 +74,16 @@ class _MapPageState extends State<MapPage> {
         return;
       }
     }
+
+    _locationController.onLocationChanged.listen((LocationData currentLocation) {
+      if(currentLocation. latitude != null &&
+          currentLocation.longitude != null){
+        setState(() {
+          _currentP =
+              LatLng(currentLocation.latitude!, currentLocation.longitude!);
+          print(_currentP);
+        });
+      }
+    } );
   }
 }
