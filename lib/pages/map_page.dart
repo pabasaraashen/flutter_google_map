@@ -1,9 +1,11 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+
+// Replace with your actual Google Maps API key
+const String GOOGLE_MAPS_API_KEY = "AIzaSyDPPGBYGwYTOrWtL9dNmiXkjhrsGS6sFTY";
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -13,105 +15,168 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-
-  Location _locationController = new Location();
+  final Location _locationController = Location();
 
   final Completer<GoogleMapController> _mapController =
   Completer<GoogleMapController>();
 
   static const LatLng _pGooglePlex = LatLng(6.927079, 79.861244);
   static const LatLng _pApplePark = LatLng(6.933850, 79.844860);
-  LatLng? _currentP = null;
+  LatLng? _currentP;
+
+  // Store polyline coordinates and polylines
+  List<LatLng> polylineCoordinates = [];
+  Map<PolylineId, Polyline> polylines = {};
 
   @override
   void initState() {
     super.initState();
-    getLocationUpdates();
+    getLocationUpdates().then((_) async {
+      List<LatLng> coordinates = await getPolylinePoints();
+      generatePolylineFromPoints(coordinates);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Google Maps Route"),
+        backgroundColor: Colors.blue,
+      ),
       body: _currentP == null
           ? const Center(
-        child: Text("Loading..."),
+        child: CircularProgressIndicator(),
       )
           : GoogleMap(
         onMapCreated: ((GoogleMapController controller) =>
             _mapController.complete(controller)),
-        initialCameraPosition:  CameraPosition(
+        initialCameraPosition: CameraPosition(
           target: _currentP!,
-          zoom: 11,
+          zoom: 13,
         ),
         markers: {
           Marker(
             markerId: const MarkerId("_currentLocation"),
-            icon: BitmapDescriptor.defaultMarker,
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
             position: _currentP!,
+            infoWindow: const InfoWindow(title: "Your Location"),
           ),
           Marker(
             markerId: const MarkerId("_sourceLocation"),
-            icon: BitmapDescriptor.defaultMarker,
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
             position: _pGooglePlex,
+            infoWindow: const InfoWindow(title: "Starting Point"),
           ),
           Marker(
             markerId: const MarkerId("_destinationLocation"),
-            icon: BitmapDescriptor.defaultMarker,
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
             position: _pApplePark,
+            infoWindow: const InfoWindow(title: "Destination"),
           ),
         },
+        polylines: Set<Polyline>.of(polylines.values),
+        myLocationEnabled: true,
+        myLocationButtonEnabled: true,
+        compassEnabled: true,
+        zoomControlsEnabled: true,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _cameraToPosition(_currentP!);
+        },
+        child: const Icon(Icons.my_location),
       ),
     );
   }
 
-  Future<void> _cameraToPosition(LatLng pos) async{
+  // Generate polyline on the map
+  void generatePolylineFromPoints(List<LatLng> points) {
+    if (points.isEmpty) return;
+
+    PolylineId id = const PolylineId("route");
+    Polyline polyline = Polyline(
+      polylineId: id,
+      color: Colors.blue,
+      points: points,
+      width: 5,
+      patterns: [PatternItem.dash(15), PatternItem.gap(10)],
+    );
+
+    setState(() {
+      polylines[id] = polyline;
+    });
+  }
+
+  // Move camera to specified position
+  Future<void> _cameraToPosition(LatLng pos) async {
     final GoogleMapController controller = await _mapController.future;
-    CameraPosition _newCameraPosition = CameraPosition(
+    CameraPosition newCameraPosition = CameraPosition(
       target: pos,
-      zoom: 11,
+      zoom: 14,
     );
     await controller.animateCamera(
-        CameraUpdate.newCameraPosition(_newCameraPosition),
+      CameraUpdate.newCameraPosition(newCameraPosition),
     );
   }
 
+  // Get location updates
   Future<void> getLocationUpdates() async {
-    bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
 
-    _serviceEnabled = await _locationController.serviceEnabled();
-    if (_serviceEnabled) {
-      _serviceEnabled = await _locationController.requestService();
-    }else{
-      return;
+    serviceEnabled = await _locationController.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await _locationController.requestService();
+      if (!serviceEnabled) {
+        return;
+      }
     }
 
-    _permissionGranted = await _locationController.hasPermission();
-    if(_permissionGranted == PermissionStatus.denied){
-      _permissionGranted = await _locationController.requestPermission();
-      if(_permissionGranted != PermissionStatus.granted){
+    permissionGranted = await _locationController.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await _locationController.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
         return;
       }
     }
 
     _locationController.onLocationChanged.listen((LocationData currentLocation) {
-      if(currentLocation. latitude != null &&
-          currentLocation.longitude != null){
+      if (currentLocation.latitude != null && currentLocation.longitude != null) {
         setState(() {
-          _currentP =
-              LatLng(currentLocation.latitude!, currentLocation.longitude!);
-          _cameraToPosition(_currentP!);
+          _currentP = LatLng(currentLocation.latitude!, currentLocation.longitude!);
+          if (_mapController.isCompleted) {
+            _cameraToPosition(_currentP!);
+          }
         });
       }
-    } );
+    });
   }
 
-
-  Future<List<LatLng>> getPolylinePoints() async{
-    List<LatLng> polylineCoordinates = ();
+  // Get polyline points between source and destination
+  Future<List<LatLng>> getPolylinePoints() async {
+    List<LatLng> polylineCoordinates = [];
     PolylinePoints polylinePoints = PolylinePoints();
-    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(request: request)
+
+    try {
+      PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+        GOOGLE_MAPS_API_KEY,
+        PointLatLng(_pGooglePlex.latitude, _pGooglePlex.longitude),
+        PointLatLng(_pApplePark.latitude, _pApplePark.longitude),
+        travelMode: TravelMode.driving,
+      );
+
+      if (result.points.isNotEmpty) {
+        for (var point in result.points) {
+          polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+        }
+      } else {
+        debugPrint("Error retrieving polyline: ${result.errorMessage}");
+      }
+    } catch (e) {
+      debugPrint("Exception while getting polyline points: $e");
+    }
+
+    return polylineCoordinates;
   }
 }
-
-
