@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -104,4 +105,13 @@ class _MapPageState extends State<MapPage> {
       }
     } );
   }
+
+
+  Future<List<LatLng>> getPolylinePoints() async{
+    List<LatLng> polylineCoordinates = ();
+    PolylinePoints polylinePoints = PolylinePoints();
+    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(request: request)
+  }
 }
+
+
