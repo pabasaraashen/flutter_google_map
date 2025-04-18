@@ -38,9 +38,9 @@ class _MapPageState extends State<MapPage> {
           : GoogleMap(
         onMapCreated: ((GoogleMapController controller) =>
             _mapController.complete(controller)),
-        initialCameraPosition: const CameraPosition(
-          target: _pGooglePlex,
-          zoom: 5,
+        initialCameraPosition:  CameraPosition(
+          target: _currentP!,
+          zoom: 12,
         ),
         markers: {
           Marker(
