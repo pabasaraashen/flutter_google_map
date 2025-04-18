@@ -16,7 +16,7 @@ class _MapPageState extends State<MapPage> {
   Location _locationController = new Location();
 
   final Completer<GoogleMapController> _mapController =
-    Completer<GoogleMapController>();
+  Completer<GoogleMapController>();
 
   static const LatLng _pGooglePlex = LatLng(6.927079, 79.861244);
   static const LatLng _pApplePark = LatLng(6.933850, 79.844860);
@@ -40,7 +40,7 @@ class _MapPageState extends State<MapPage> {
             _mapController.complete(controller)),
         initialCameraPosition:  CameraPosition(
           target: _currentP!,
-          zoom: 12,
+          zoom: 10,
         ),
         markers: {
           Marker(
