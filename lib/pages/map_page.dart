@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -12,6 +14,9 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
 
   Location _locationController = new Location();
+
+  final Completer<GoogleMapController> _mapController =
+    Completer<GoogleMapController>();
 
   static const LatLng _pGooglePlex = LatLng(6.927079, 79.861244);
   static const LatLng _pApplePark = LatLng(6.933850, 79.844860);
@@ -31,9 +36,11 @@ class _MapPageState extends State<MapPage> {
         child: Text("Loading..."),
       )
           : GoogleMap(
+        onMapCreated: ((GoogleMapController controller) =>
+            _mapController.complete(controller)),
         initialCameraPosition: const CameraPosition(
           target: _pGooglePlex,
-          zoom: 12,
+          zoom: 5,
         ),
         markers: {
           Marker(
