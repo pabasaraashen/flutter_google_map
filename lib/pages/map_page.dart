@@ -11,11 +11,11 @@ import 'dart:convert';
 const String GOOGLE_MAPS_API_KEY = "AIzaSyDPPGBYGwYTOrWtL9dNmiXkjhrsGS6sFTY"; // Don't forget to replace
 
 // Constants for transportation cost calculation
-const double CAR_BASE_FARE = 50.0; // Base fare for car in local currency (e.g., LKR)
-const double CAR_COST_PER_KM = 40.0; // Cost per kilometer for car
+const double CAR_BASE_FARE = 120.0; // Base fare for car in local currency (e.g., LKR)
+const double CAR_COST_PER_KM = 100.0; // Cost per kilometer for car
 
-const double THREEWHEEL_BASE_FARE = 60.0; // Base fare for threewheel in local currency
-const double THREEWHEEL_COST_PER_KM = 50.0; // Cost per kilometer for threewheel
+const double THREEWHEEL_BASE_FARE = 50.0; // Base fare for threewheel in local currency
+const double THREEWHEEL_COST_PER_KM = 40.0; // Cost per kilometer for threewheel
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -29,8 +29,6 @@ class _MapPageState extends State<MapPage> {
   final Completer<GoogleMapController> _mapController = Completer<GoogleMapController>();
   final TextEditingController _searchController = TextEditingController();
 
-  static const LatLng _pGooglePlex = LatLng(6.927079, 79.861244);
-  static const LatLng _pApplePark = LatLng(6.933850, 79.844860);
   LatLng? _currentP;
   LatLng? _destinationP;
 
@@ -113,7 +111,7 @@ class _MapPageState extends State<MapPage> {
                       itemCount: predictions.length,
                       itemBuilder: (context, index) {
                         return ListTile(
-                          leading: const Icon(Icons.location_on),
+                          leading: const Icon(Icons.location_on, color: Colors.red,),
                           title: Text(predictions[index].description ?? ""),
                           onTap: () async {
                             final placeId = predictions[index].placeId!;
@@ -212,7 +210,7 @@ class _MapPageState extends State<MapPage> {
                         ),
                         Row(
                           children: [
-                            const Icon(Icons.straighten, color: Colors.blue),
+                            const Icon(Icons.flag, color: Colors.blue),
                             const SizedBox(width: 8),
                             Text(
                               travelDistance!,
@@ -246,7 +244,7 @@ class _MapPageState extends State<MapPage> {
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.blue,
+                                color: Colors.black,
                               ),
                             ),
                           ],
@@ -331,17 +329,6 @@ class _MapPageState extends State<MapPage> {
           );
           markers[markerId] = marker;
 
-          // Add fixed markers
-          markers[MarkerId("_sourceLocation")] = Marker(
-            markerId: MarkerId("_sourceLocation"),
-            position: _pGooglePlex,
-          );
-
-          markers[MarkerId("_destinationLocation")] = Marker(
-            markerId: MarkerId("_destinationLocation"),
-            position: _pApplePark,
-          );
-
           // If destination is already set, update the polyline
           if (_destinationP != null) {
             updateDirections(_currentP!, _destinationP!);
@@ -366,7 +353,7 @@ class _MapPageState extends State<MapPage> {
     final Marker marker = Marker(
       markerId: markerId,
       position: end,
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
       infoWindow: InfoWindow(
         title: "Destination",
         snippet: "$travelTime • Est. Cost: $transportationCost",
@@ -464,7 +451,7 @@ class _MapPageState extends State<MapPage> {
     PolylineId id = const PolylineId("route");
     Polyline polyline = Polyline(
       polylineId: id,
-      color: Colors.blue,
+      color: Colors.black,
       points: polylineCoordinates,
       width: 5,
     );
