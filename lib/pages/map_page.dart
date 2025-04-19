@@ -10,6 +10,13 @@ import 'dart:convert';
 
 const String GOOGLE_MAPS_API_KEY = "AIzaSyDPPGBYGwYTOrWtL9dNmiXkjhrsGS6sFTY"; // Don't forget to replace
 
+// Constants for transportation cost calculation
+const double CAR_BASE_FARE = 50.0; // Base fare for car in local currency (e.g., LKR)
+const double CAR_COST_PER_KM = 40.0; // Cost per kilometer for car
+
+const double THREEWHEEL_BASE_FARE = 60.0; // Base fare for threewheel in local currency
+const double THREEWHEEL_COST_PER_KM = 50.0; // Cost per kilometer for threewheel
+
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
 
@@ -34,6 +41,13 @@ class _MapPageState extends State<MapPage> {
 
   String? travelTime;
   String? travelDistance;
+  String? transportationCost;
+
+  // Transportation mode
+  String selectedMode = 'car'; // Default mode
+
+  // Raw values for calculation
+  double? distanceInKm;
 
   @override
   void initState() {
@@ -130,14 +144,42 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
 
-          // Travel Time Info Panel
+          // Transportation mode selection
+          Positioned(
+            top: 120,
+            right: 15,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+              child: Column(
+                children: [
+                  _transportModeButton('car', Icons.directions_car),
+                  const SizedBox(height: 8),
+                  _transportModeButton('threewheel', Icons.local_taxi),
+                ],
+              ),
+            ),
+          ),
+
+          // Travel Info Panel (Time, Distance, Cost)
           if (travelTime != null && travelDistance != null)
             Positioned(
               bottom: 20,
               left: 20,
               right: 20,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
@@ -150,40 +192,107 @@ class _MapPageState extends State<MapPage> {
                     ),
                   ],
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Icon(Icons.access_time, color: Colors.blue),
-                        const SizedBox(width: 8),
-                        Text(
-                          travelTime!,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          children: [
+                            const Icon(Icons.access_time, color: Colors.blue),
+                            const SizedBox(width: 8),
+                            Text(
+                              travelTime!,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            const Icon(Icons.straighten, color: Colors.blue),
+                            const SizedBox(width: 8),
+                            Text(
+                              travelDistance!,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    Row(
-                      children: [
-                        const Icon(Icons.directions_car, color: Colors.blue),
-                        const SizedBox(width: 8),
-                        Text(
-                          travelDistance!,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    if (transportationCost != null)
+                      Container(
+                        margin: const EdgeInsets.only(top: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                      ],
-                    ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              selectedMode == 'car' ? Icons.directions_car : Icons.local_taxi,
+                              color: Colors.blue,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Estimated Cost: $transportationCost",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
                   ],
                 ),
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _transportModeButton(String mode, IconData icon) {
+    bool isSelected = selectedMode == mode;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedMode = mode;
+
+          // Recalculate cost if destination is already set
+          if (_currentP != null && _destinationP != null && distanceInKm != null) {
+            transportationCost = calculateTransportationCost(distanceInKm!, selectedMode);
+          }
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue : Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.4),
+              spreadRadius: 1,
+              blurRadius: 4,
+            )
+          ] : null,
+        ),
+        child: Icon(
+          icon,
+          color: isSelected ? Colors.white : Colors.grey,
+          size: 24,
+        ),
       ),
     );
   }
@@ -260,7 +369,7 @@ class _MapPageState extends State<MapPage> {
       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
       infoWindow: InfoWindow(
         title: "Destination",
-        snippet: travelTime,
+        snippet: "$travelTime • Est. Cost: $transportationCost",
       ),
     );
 
@@ -284,10 +393,20 @@ class _MapPageState extends State<MapPage> {
         final data = json.decode(response.body);
 
         if (data['status'] == 'OK') {
+          // Extract distance value for calculation
+          int distanceValue = data['routes'][0]['legs'][0]['distance']['value']; // in meters
+
+          // Convert to kilometers
+          distanceInKm = distanceValue / 1000;
+
+          // Calculate transportation cost
+          String cost = calculateTransportationCost(distanceInKm!, selectedMode);
+
           setState(() {
-            // Extract travel time and distance from the response
+            // Extract travel time and distance text from the response
             travelTime = data['routes'][0]['legs'][0]['duration']['text'];
             travelDistance = data['routes'][0]['legs'][0]['distance']['text'];
+            transportationCost = cost;
           });
         } else {
           debugPrint('Direction API error: ${data['status']}');
@@ -298,6 +417,22 @@ class _MapPageState extends State<MapPage> {
     } catch (e) {
       debugPrint('Error getting directions: $e');
     }
+  }
+
+  String calculateTransportationCost(double distance, String mode) {
+    double cost;
+
+    // Simplified calculation: BASE_FARE + (distance * COST_PER_KM)
+    if (mode == 'car') {
+      cost = CAR_BASE_FARE + (distance * CAR_COST_PER_KM);
+    } else { // threewheel
+      cost = THREEWHEEL_BASE_FARE + (distance * THREEWHEEL_COST_PER_KM);
+    }
+
+    // Round to nearest 10
+    cost = (cost / 10).round() * 10;
+
+    return "LKR ${cost.toStringAsFixed(0)}";
   }
 
   Future<List<LatLng>> getPolylinePoints(LatLng start, LatLng end) async {
