@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -25,12 +24,13 @@ class _MapPageState extends State<MapPage> {
   static const LatLng _pApplePark = LatLng(6.933850, 79.844860);
   LatLng? _currentP = null;
 
+  Map<PolylineId, Polyline> polylines = {};
   @override
   void initState() {
     super.initState();
     getLocationUpdates().then((_) => {
       getPolylinePoints().then((coodinates) =>
-          print(coodinates)
+          generatePolylineFromPoints(coodinates)
       ),
     },
     );
@@ -67,6 +67,7 @@ class _MapPageState extends State<MapPage> {
             position: _pApplePark,
           ),
         },
+        polylines: Set<Polyline>.of(polylines.values),
       ),
     );
   }
@@ -133,6 +134,19 @@ class _MapPageState extends State<MapPage> {
     }
 
     return polylineCoordinates;
+  }
+
+  void generatePolylineFromPoints(List<LatLng> polylineCoordinates) async{
+    PolylineId id = PolylineId("poly");
+    Polyline polyline = Polyline(
+        polylineId: id,
+        color: Colors.black,
+        points: polylineCoordinates,
+        width: 8,
+    );
+    setState(() {
+      polylines[id] = polyline;
+    });
   }
 }
 
