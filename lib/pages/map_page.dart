@@ -21,8 +21,8 @@ class _MapPageState extends State<MapPage> {
   final Completer<GoogleMapController> _mapController = Completer<GoogleMapController>();
   final TextEditingController _searchController = TextEditingController();
 
-  static const LatLng _pGooglePlex = LatLng(6.927079, 79.861244);
-  static const LatLng _pApplePark = LatLng(6.933850, 79.844860);
+  //static const LatLng _pGooglePlex = LatLng(6.927079, 79.861244);
+  //static const LatLng _pApplePark = LatLng(6.933850, 79.844860);
   LatLng? _currentP;
 
   Map<PolylineId, Polyline> polylines = {};
@@ -32,10 +32,10 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
-    googlePlace = GooglePlace(GOOGLE_MAPS_API_KEY);
-    getLocationUpdates().then((_) => {
+    googlePlace = GooglePlace('AIzaSyBbLd67HZT9EYb8Xi7ySuVWJVBmLRFREjM');
+    /*getLocationUpdates().then((_) => {
       getPolylinePoints().then((coodinates) => generatePolylineFromPoints(coodinates)),
-    });
+    });*/
   }
 
   @override
@@ -50,8 +50,8 @@ class _MapPageState extends State<MapPage> {
             initialCameraPosition: CameraPosition(target: _currentP!, zoom: 11),
             markers: {
               Marker(markerId: const MarkerId("_currentLocation"), position: _currentP!),
-              Marker(markerId: const MarkerId("_sourceLocation"), position: _pGooglePlex),
-              Marker(markerId: const MarkerId("_destinationLocation"), position: _pApplePark),
+             // Marker(markerId: const MarkerId("_sourceLocation"), position: _pGooglePlex),
+             // Marker(markerId: const MarkerId("_destinationLocation"), position: _pApplePark),
             },
             polylines: Set<Polyline>.of(polylines.values),
           ),
@@ -158,7 +158,7 @@ class _MapPageState extends State<MapPage> {
     });
   }
 
-  Future<List<LatLng>> getPolylinePoints() async {
+ /* Future<List<LatLng>> getPolylinePoints() async {
     List<LatLng> polylineCoordinates = [];
     PolylinePoints polylinePoints = PolylinePoints();
 
@@ -191,7 +191,7 @@ class _MapPageState extends State<MapPage> {
     setState(() {
       polylines[id] = polyline;
     });
-  }
+  }*/
 
   void autoCompleteSearch(String value) async {
     var result = await googlePlace.autocomplete.get(value);
