@@ -8,14 +8,14 @@ import 'package:location/location.dart' as loc;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-const String GOOGLE_MAPS_API_KEY = "AIzaSyDPPGBYGwYTOrWtL9dNmiXkjhrsGS6sFTY"; // Don't forget to replace
+const String GOOGLE_MAPS_API_KEY = "AIzaSyDPPGBYGwYTOrWtL9dNmiXkjhrsGS6sFTY"; // google map API
 
-// Constants for transportation cost calculation
-const double CAR_BASE_FARE = 120.0; // Base fare for car in local currency (e.g., LKR)
-const double CAR_COST_PER_KM = 100.0; // Cost per kilometer for car
+// transportation cost calculation
+const double CAR_BASE_FARE = 120.0;
+const double CAR_COST_PER_KM = 100.0;
 
-const double THREEWHEEL_BASE_FARE = 50.0; // Base fare for threewheel in local currency
-const double THREEWHEEL_COST_PER_KM = 40.0; // Cost per kilometer for threewheel
+const double THREEWHEEL_BASE_FARE = 50.0;
+const double THREEWHEEL_COST_PER_KM = 40.0;
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -42,7 +42,7 @@ class _MapPageState extends State<MapPage> {
   String? transportationCost;
 
   // Transportation mode
-  String selectedMode = 'car'; // Default mode
+  String selectedMode = 'car';
 
   // Raw values for calculation
   double? distanceInKm;
@@ -50,7 +50,7 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
-    googlePlace = GooglePlace('AIzaSyBbLd67HZT9EYb8Xi7ySuVWJVBmLRFREjM');
+    googlePlace = GooglePlace('AIzaSyBbLd67HZT9EYb8Xi7ySuVWJVBmLRFREjM'); // google place API
     getLocationUpdates();
   }
 
@@ -70,7 +70,7 @@ class _MapPageState extends State<MapPage> {
 
           // Search Bar
           Positioned(
-            top: 40,
+            top: 50,
             left: 15,
             right: 15,
             child: Column(
@@ -142,7 +142,7 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
 
-          // Transportation mode selection
+          // Transportation mode buttton selection
           Positioned(
             top: 120,
             right: 15,
@@ -170,10 +170,10 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
 
-          // Travel Info Panel (Time, Distance, Cost)
+          // Travel Information Panel (Time, Distance, Cost)
           if (travelTime != null && travelDistance != null)
             Positioned(
-              bottom: 20,
+              bottom: 50,
               left: 20,
               right: 20,
               child: Container(
@@ -409,10 +409,10 @@ class _MapPageState extends State<MapPage> {
   String calculateTransportationCost(double distance, String mode) {
     double cost;
 
-    // Simplified calculation: BASE_FARE + (distance * COST_PER_KM)
+    // Cost calculation: BASE_FARE + (distance * COST_PER_KM)
     if (mode == 'car') {
       cost = CAR_BASE_FARE + (distance * CAR_COST_PER_KM);
-    } else { // threewheel
+    } else {
       cost = THREEWHEEL_BASE_FARE + (distance * THREEWHEEL_COST_PER_KM);
     }
 
