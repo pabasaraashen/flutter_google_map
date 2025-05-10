@@ -7,6 +7,9 @@ import 'package:google_place/google_place.dart';
 import 'package:location/location.dart' as loc;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+// Import the components
+import 'trans_searchbar/trans_searchbar.dart';
+import 'travelinfo_panel/travelinfo_panel.dart';
 
 const String GOOGLE_MAPS_API_KEY = "AIzaSyDPPGBYGwYTOrWtL9dNmiXkjhrsGS6sFTY"; // google map API
 
@@ -35,7 +38,6 @@ class _MapPageState extends State<MapPage> {
   Map<PolylineId, Polyline> polylines = {};
   Map<MarkerId, Marker> markers = {};
   late GooglePlace googlePlace;
-  List<AutocompletePrediction> predictions = [];
 
   String? travelTime;
   String? travelDistance;
@@ -68,81 +70,30 @@ class _MapPageState extends State<MapPage> {
             polylines: Set<Polyline>.of(polylines.values),
           ),
 
-          // Search Bar
+          // Search Bar (using the TransSearchBar component)
           Positioned(
             top: 50,
             left: 15,
             right: 15,
-            child: Column(
-              children: [
-                Material(
-                  elevation: 5,
-                  borderRadius: BorderRadius.circular(10),
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: "Search location",
-                      prefixIcon: const Icon(Icons.search),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                    ),
-                    onChanged: (value) {
-                      if (value.isNotEmpty) {
-                        autoCompleteSearch(value);
-                      } else {
-                        setState(() {
-                          predictions = [];
-                        });
-                      }
-                    },
-                  ),
-                ),
+            child: TransSearchBar(
+              searchController: _searchController,
+              googlePlace: googlePlace,
+              onLocationSelected: (LatLng newPos) {
+                setState(() {
+                  _destinationP = newPos;
+                });
 
-                // Prediction list
-                if (predictions.isNotEmpty)
-                  Container(
-                    margin: const EdgeInsets.only(top: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: predictions.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          leading: const Icon(Icons.location_on, color: Colors.red,),
-                          title: Text(predictions[index].description ?? ""),
-                          onTap: () async {
-                            final placeId = predictions[index].placeId!;
-                            final details = await googlePlace.details.get(placeId);
-                            if (details != null && details.result != null && details.result!.geometry != null) {
-                              final location = details.result!.geometry!.location!;
-                              LatLng newPos = LatLng(location.lat!, location.lng!);
+                _cameraToPosition(newPos);
 
-                              setState(() {
-                                _destinationP = newPos;
-                                predictions = [];
-                                _searchController.clear();
-                              });
-
-                              _cameraToPosition(newPos);
-
-                              // Draw route to the selected destination
-                              if (_currentP != null) {
-                                updateDirections(_currentP!, _destinationP!);
-                              }
-                            }
-                          },
-                        );
-                      },
-                    ),
-                  ),
-              ],
+                // Draw route to the selected destination
+                if (_currentP != null) {
+                  updateDirections(_currentP!, _destinationP!);
+                }
+              },
             ),
           ),
 
-          // Transportation mode buttton selection
+          // Transportation mode button selection
           Positioned(
             top: 120,
             right: 15,
@@ -170,88 +121,17 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
 
-          // Travel Information Panel (Time, Distance, Cost)
+          // Travel Information Panel (using the TravelInfoPanel component)
           if (travelTime != null && travelDistance != null)
             Positioned(
               bottom: 50,
               left: 20,
               right: 20,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.access_time, color: Colors.blue),
-                            const SizedBox(width: 8),
-                            Text(
-                              travelTime!,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const Icon(Icons.flag, color: Colors.blue),
-                            const SizedBox(width: 8),
-                            Text(
-                              travelDistance!,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    if (transportationCost != null)
-                      Container(
-                        margin: const EdgeInsets.only(top: 12),
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              selectedMode == 'car' ? Icons.directions_car : Icons.local_taxi,
-                              color: Colors.blue,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              "Estimated Cost: $transportationCost",
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                  ],
-                ),
+              child: TravelInfoPanel(
+                travelTime: travelTime,
+                travelDistance: travelDistance,
+                transportationCost: transportationCost,
+                selectedMode: selectedMode,
               ),
             ),
         ],
@@ -459,14 +339,5 @@ class _MapPageState extends State<MapPage> {
     setState(() {
       polylines[id] = polyline;
     });
-  }
-
-  void autoCompleteSearch(String value) async {
-    var result = await googlePlace.autocomplete.get(value);
-    if (result != null && result.predictions != null && mounted) {
-      setState(() {
-        predictions = result.predictions!;
-      });
-    }
   }
 }
