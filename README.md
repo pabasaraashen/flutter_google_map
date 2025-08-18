@@ -1,16 +1,30 @@
-# flutter_google_map
+# 🗺️ Flutter Google Maps – Transport Module
 
-A new Flutter project.
+This module provides **real-time transport features** with Google Maps, designed for car 🚗 and tuk-tuk 🛺 services.  
+It enables **route planning, pricing, and tracking** for an efficient and user-friendly transport experience.  
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## ✅ Key Features
 
-A few resources to get you started if this is your first Flutter project:
+- 🚖 **Transport Options Page:** Interactive design supporting both **Car** and **Tuk-Tuk** services.  
+- 💰 **Estimated Pricing & Travel Time:** Helps users plan efficiently with cost and duration details.  
+- 🗺️ **Google Maps Integration:** Real-time location tracking using the **Google Maps API**.  
+- 🔎 **Search & Route Page:** Autocomplete destinations powered by **Google Places API**.  
+- 📍 **Dynamic Route Visualization:** Routes drawn with **Google Maps Polylines**.  
+- 🧮 **Fare Calculation Algorithm:** Pricing based on distance and transport type.  
+- 📡 **Real-Time Location Services:** Implemented using Flutter’s **location** package.  
+- ⚠️ **Error Handling & Permissions:** Robust checks for smooth user experience.  
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🛠 Tech Stack
+
+- **Frontend (Mobile):** Flutter (Dart)  
+- **Maps & Location:** Google Maps API, Google Places API, Flutter Location Package  
+- **Core Features:** Dynamic Polylines, Real-Time Tracking, Fare Calculation Algorithm  
+
+---
+
+✨ *This transport module demonstrates how Flutter + Google Maps can be leveraged to build modern, real-time transport apps.*
+
