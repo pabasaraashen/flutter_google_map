@@ -28,5 +28,5 @@ It enables **route planning, pricing, and tracking** for an efficient and user-f
 <img width="445" height="882" alt="map1" src="https://github.com/user-attachments/assets/0f8c8fb6-d2b4-488a-9a13-b74f243c044e" />
 <img width="445" height="882" alt="map2" src="https://github.com/user-attachments/assets/6125d01b-153c-44f2-bdfe-6afa9fc69285" />
 <img width="446" height="884" alt="map3" src="https://github.com/user-attachments/assets/8c46804e-b9b8-43da-8f27-aaf54c2db513" />
-<img width="445" height="884" alt="change to vehicle tuktuk" src="https://github.com/user-attachments/assets/4da31558-3b4c-4f74-ad08-86b24bfc4d29" />
+
 
